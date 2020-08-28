@@ -108,3 +108,42 @@ class bop_sec52(default):
                 self.gamma, self.decay_step, self.gamma_decay, staircase=True
             ),
         )
+    
+    
+@registry.register_hparams(binarynet)
+class xinbop(default):
+    batch_size = 100
+    kernel_quantizer = None
+    kernel_constraint = None
+    threshold = 1e-6
+    gamma = 1e-3
+
+    @property
+    def optimizer(self):
+        return optimizers.XinBop(
+            fp_optimizer=tf.keras.optimizers.Adam(0.01),
+            threshold=self.threshold,
+            gamma=self.gamma,
+        )
+
+
+@registry.register_hparams(binarynet)
+class xinbop_sec52(default):
+    epochs = 500
+    batch_size = 50
+    kernel_quantizer = None
+    kernel_constraint = None
+    threshold = 1e-8
+    gamma = 1e-4
+    gamma_decay = 0.1
+    decay_step = int((50000 / 50) * 100)
+
+    @property
+    def optimizer(self):
+        return optimizers.XinBop(
+            fp_optimizer=tf.keras.optimizers.Adam(0.01),
+            threshold=self.threshold,
+            gamma=tf.keras.optimizers.schedules.ExponentialDecay(
+                self.gamma, self.decay_step, self.gamma_decay, staircase=True
+            ),
+        )
